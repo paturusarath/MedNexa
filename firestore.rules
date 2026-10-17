@@ -1,0 +1,165 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Global Safety Net: Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Security Primitives
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+    function incoming() {
+      return request.resource.data;
+    }
+    function existing() {
+      return resource.data;
+    }
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // User Profile Validation Helper
+    function isValidUser(data) {
+      return data.keys().hasAll(['id', 'name', 'email', 'role']) &&
+             data.id is string && data.id.size() <= 128 &&
+             data.name is string && data.name.size() > 0 && data.name.size() <= 100 &&
+             data.email is string && data.email.size() <= 120 &&
+             data.role in ['patient', 'doctor', 'shopkeeper', 'admin'];
+    }
+
+    // Medicine Item Validation Helper
+    function isValidMedicine(data) {
+      return data.keys().hasAll(['id', 'name', 'price', 'stock', 'expiryDate', 'mfgDate']) &&
+             data.id is string && data.id.size() <= 128 &&
+             data.name is string && data.name.size() > 0 && data.name.size() <= 200 &&
+             data.price is number && data.price >= 0 &&
+             data.stock is number && data.stock >= 0 &&
+             data.expiryDate is string && data.expiryDate.size() <= 20 &&
+             data.mfgDate is string && data.mfgDate.size() <= 20;
+    }
+
+    // Appointment Validation Helper
+    function isValidAppointment(data) {
+      return data.keys().hasAll(['id', 'patientId', 'doctorId', 'date', 'timeSlot', 'status']) &&
+             data.id is string && data.id.size() <= 128 &&
+             data.patientId is string && data.patientId.size() <= 128 &&
+             data.doctorId is string && data.doctorId.size() <= 128 &&
+             data.date is string && data.date.size() <= 32 &&
+             data.timeSlot is string && data.timeSlot.size() <= 32 &&
+             data.status in ['confirmed', 'in-progress', 'completed', 'cancelled'];
+    }
+
+    // Pharmacy Order Validation Helper
+    function isValidOrder(data) {
+      return data.keys().hasAll(['id', 'patientId', 'totalAmount', 'status', 'orderedAt']) &&
+             data.id is string && data.id.size() <= 128 &&
+             data.patientId is string && data.patientId.size() <= 128 &&
+             data.totalAmount is number && data.totalAmount >= 0 &&
+             data.status in ['placed', 'verified', 'processing', 'shipped', 'delivered', 'cancelled'];
+    }
+
+    // Vitals Validation Helper
+    function isValidVital(data) {
+      return data.keys().hasAll(['id', 'patientId', 'recordedAt']) &&
+             data.id is string && data.id.size() <= 128 &&
+             data.patientId is string && data.patientId.size() <= 128;
+    }
+
+    // Pill Reminder Validation Helper
+    function isValidReminder(data) {
+      return data.keys().hasAll(['id', 'patientId', 'medicineName', 'active']) &&
+             data.id is string && data.id.size() <= 128 &&
+             data.patientId is string && data.patientId.size() <= 128 &&
+             data.medicineName is string && data.medicineName.size() <= 100 &&
+             data.active is bool;
+    }
+
+    // Notification Validation Helper
+    function isValidNotification(data) {
+      return data.keys().hasAll(['id', 'userId', 'title', 'message', 'read']) &&
+             data.id is string && data.id.size() <= 128 &&
+             data.userId is string && data.userId.size() <= 128 &&
+             data.title is string && data.title.size() <= 100 &&
+             data.read is bool;
+    }
+
+    // 1. Users Collection
+    match /users/{userId} {
+      allow get: if isSignedIn() && (request.auth.uid == userId);
+      allow list: if false;
+      allow create: if isSignedIn() && isValidId(userId) && request.auth.uid == userId && isValidUser(incoming());
+      allow update: if isSignedIn() && isValidId(userId) && request.auth.uid == userId && isValidUser(incoming());
+      allow delete: if false;
+    }
+
+    // 2. Medicines Catalog Collection
+    match /medicines/{medicineId} {
+      allow get, list: if true;
+      allow create: if isSignedIn() && isValidId(medicineId) && isValidMedicine(incoming());
+      allow update: if isSignedIn() && isValidId(medicineId) && isValidMedicine(incoming());
+      allow delete: if isSignedIn() && isValidId(medicineId);
+    }
+
+    // 3. Appointments Collection
+    match /appointments/{appointmentId} {
+      allow get: if isSignedIn() && isValidId(appointmentId) && (existing().patientId == request.auth.uid || existing().doctorId == request.auth.uid);
+      allow list: if isSignedIn() && (resource.data.patientId == request.auth.uid || resource.data.doctorId == request.auth.uid);
+      allow create: if isSignedIn() && isValidId(appointmentId) && isValidAppointment(incoming()) && incoming().patientId == request.auth.uid;
+      allow update: if isSignedIn() && isValidId(appointmentId) && isValidAppointment(incoming()) && (existing().patientId == request.auth.uid || existing().doctorId == request.auth.uid);
+      allow delete: if isSignedIn() && isValidId(appointmentId) && (existing().patientId == request.auth.uid);
+    }
+
+    // 4. Prescriptions Collection
+    match /prescriptions/{prescriptionId} {
+      allow get: if isSignedIn() && isValidId(prescriptionId) && (existing().patientId == request.auth.uid || existing().doctorId == request.auth.uid);
+      allow list: if isSignedIn() && (resource.data.patientId == request.auth.uid || resource.data.doctorId == request.auth.uid);
+      allow create: if isSignedIn() && isValidId(prescriptionId) && (incoming().doctorId == request.auth.uid);
+      allow update: if isSignedIn() && isValidId(prescriptionId) && (existing().doctorId == request.auth.uid);
+      allow delete: if false;
+    }
+
+    // 5. Pharmacy Orders Collection
+    match /orders/{orderId} {
+      allow get: if isSignedIn() && isValidId(orderId) && (existing().patientId == request.auth.uid);
+      allow list: if isSignedIn() && (resource.data.patientId == request.auth.uid);
+      allow create: if isSignedIn() && isValidId(orderId) && isValidOrder(incoming()) && incoming().patientId == request.auth.uid;
+      allow update: if isSignedIn() && isValidId(orderId) && isValidOrder(incoming()) && (existing().patientId == request.auth.uid);
+      allow delete: if false;
+    }
+
+    // 6. Health Vitals Collection
+    match /vitals/{vitalId} {
+      allow get: if isSignedIn() && isValidId(vitalId) && (existing().patientId == request.auth.uid);
+      allow list: if isSignedIn() && (resource.data.patientId == request.auth.uid);
+      allow create: if isSignedIn() && isValidId(vitalId) && isValidVital(incoming()) && incoming().patientId == request.auth.uid;
+      allow update: if isSignedIn() && isValidId(vitalId) && isValidVital(incoming()) && (existing().patientId == request.auth.uid);
+      allow delete: if isSignedIn() && isValidId(vitalId) && (existing().patientId == request.auth.uid);
+    }
+
+    // 7. Pill Reminders Collection
+    match /pill_reminders/{reminderId} {
+      allow get: if isSignedIn() && isValidId(reminderId) && (existing().patientId == request.auth.uid);
+      allow list: if isSignedIn() && (resource.data.patientId == request.auth.uid);
+      allow create: if isSignedIn() && isValidId(reminderId) && isValidReminder(incoming()) && incoming().patientId == request.auth.uid;
+      allow update: if isSignedIn() && isValidId(reminderId) && isValidReminder(incoming()) && (existing().patientId == request.auth.uid);
+      allow delete: if isSignedIn() && isValidId(reminderId) && (existing().patientId == request.auth.uid);
+    }
+
+    // 8. Notifications Collection
+    match /notifications/{notificationId} {
+      allow get: if isSignedIn() && isValidId(notificationId) && (existing().userId == request.auth.uid);
+      allow list: if isSignedIn() && (resource.data.userId == request.auth.uid);
+      allow create: if isSignedIn() && isValidId(notificationId) && isValidNotification(incoming()) && incoming().userId == request.auth.uid;
+      allow update: if isSignedIn() && isValidId(notificationId) && isValidNotification(incoming()) && (existing().userId == request.auth.uid);
+      allow delete: if isSignedIn() && isValidId(notificationId) && (existing().userId == request.auth.uid);
+    }
+
+    // Connection testing doc
+    match /test/connection {
+      allow read: if true;
+    }
+  }
+}

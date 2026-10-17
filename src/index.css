@@ -1,0 +1,114 @@
+@import "tailwindcss";
+
+@keyframes scroll-ltr {
+  0% {
+    transform: translateX(-50%);
+  }
+  100% {
+    transform: translateX(0%);
+  }
+}
+
+@keyframes scroll-rtl {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-scroll-rtl {
+  display: flex;
+  width: max-content;
+  animation: scroll-rtl 35s linear infinite;
+  will-change: transform;
+}
+
+.animate-scroll-rtl:hover {
+  animation-play-state: paused;
+}
+
+.animate-scroll-rtl-slow {
+  display: flex;
+  width: max-content;
+  animation: scroll-rtl 45s linear infinite;
+  will-change: transform;
+}
+
+.animate-scroll-rtl-slow:hover {
+  animation-play-state: paused;
+}
+
+.animate-scroll-ltr {
+  display: flex;
+  width: max-content;
+  animation: scroll-ltr 35s linear infinite;
+  will-change: transform;
+}
+
+.animate-scroll-ltr:hover {
+  animation-play-state: paused;
+}
+
+.animate-scroll-ltr-slow {
+  display: flex;
+  width: max-content;
+  animation: scroll-ltr 45s linear infinite;
+  will-change: transform;
+}
+
+.animate-scroll-ltr-slow:hover {
+  animation-play-state: paused;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+@media print {
+  /* Hide the rest of the application when printing */
+  body {
+    background: #ffffff !important;
+    color: #0f172a !important;
+  }
+
+  body * {
+    visibility: hidden;
+  }
+
+  /* Make printable modals visible and cleanly positioned on paper */
+  #printable-patient-record,
+  #printable-patient-record *,
+  #printable-doctor-profile,
+  #printable-doctor-profile *,
+  #printable-shopkeeper-profile,
+  #printable-shopkeeper-profile * {
+    visibility: visible !important;
+  }
+
+  #printable-patient-record,
+  #printable-doctor-profile,
+  #printable-shopkeeper-profile {
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 16px !important;
+    background: #ffffff !important;
+    color: #0f172a !important;
+    overflow: visible !important;
+    max-height: none !important;
+    box-shadow: none !important;
+    border: none !important;
+  }
+
+  .print\:hidden {
+    display: none !important;
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "name": "Remix Remix Remix Remix Remix PulseHealth - Telemedicine, Pharmacy \u0026 EHR Platform",
+  "description": "Comprehensive multi-tier healthcare platform featuring telemedicine consultations, digital e-prescriptions, e-pharmacy with order tracking, medicine reminders, AI wellness planning, EHR management, unified payments, health education, and compliance audit logging.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

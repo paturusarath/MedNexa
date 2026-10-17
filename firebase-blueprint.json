@@ -1,0 +1,201 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile with role-based attributes and contact details",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique user ID" },
+        "name": { "type": "string", "description": "Full name of the user" },
+        "email": { "type": "string", "format": "email", "description": "Email address" },
+        "role": { "type": "string", "enum": ["patient", "doctor", "shopkeeper", "admin"], "description": "User role" },
+        "phone": { "type": "string", "description": "Contact phone number" },
+        "avatar": { "type": "string", "description": "Profile picture URL" },
+        "age": { "type": "number", "description": "Patient age in years" },
+        "gender": { "type": "string", "description": "Gender" },
+        "bloodGroup": { "type": "string", "description": "Blood group type" },
+        "medicalId": { "type": "string", "description": "Government or hospital health ID" },
+        "specialization": { "type": "string", "description": "Doctor medical specialty" },
+        "licenseNumber": { "type": "string", "description": "Doctor or pharmacist license number" },
+        "hospital": { "type": "string", "description": "Associated hospital or clinical practice" },
+        "storeName": { "type": "string", "description": "Pharmacy store name" },
+        "gstin": { "type": "string", "description": "GST Identification Number for pharmacy" },
+        "address": { "type": "string", "description": "Physical delivery address" },
+        "createdAt": { "type": "string", "description": "Timestamp of creation" },
+        "updatedAt": { "type": "string", "description": "Timestamp of last update" }
+      },
+      "required": ["id", "name", "email", "role"]
+    },
+    "Medicine": {
+      "title": "Medicine",
+      "description": "Pharmaceutical product in the Medimart catalog and pharmacy inventory",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Medicine SKU or unique ID" },
+        "name": { "type": "string", "description": "Brand trade name" },
+        "genericName": { "type": "string", "description": "Active pharmaceutical ingredient (API)" },
+        "category": { "type": "string", "description": "Therapeutic class" },
+        "manufacturer": { "type": "string", "description": "Pharmaceutical manufacturer name" },
+        "price": { "type": "number", "description": "Maximum Retail Price (MRP)" },
+        "discountPrice": { "type": "number", "description": "Offer or discounted price" },
+        "stock": { "type": "number", "description": "Available inventory units" },
+        "requiresPrescription": { "type": "boolean", "description": "Schedule H / Rx requirement" },
+        "dosageForm": { "type": "string", "description": "Dosage form (e.g., Tablet, Capsule, Syrup)" },
+        "strength": { "type": "string", "description": "Concentration/strength (e.g. 500mg)" },
+        "description": { "type": "string", "description": "Clinical overview" },
+        "image": { "type": "string", "description": "Front packaging image URL" },
+        "backImage": { "type": "string", "description": "Back blister pack image URL" },
+        "batchNumber": { "type": "string", "description": "Manufacturing batch ID" },
+        "expiryDate": { "type": "string", "description": "Expiry date in DD/MM/YYYY format" },
+        "mfgDate": { "type": "string", "description": "Manufacturing date in DD/MM/YYYY format" }
+      },
+      "required": ["id", "name", "price", "stock", "expiryDate", "mfgDate"]
+    },
+    "Appointment": {
+      "title": "Appointment",
+      "description": "Teleconsultation or in-clinic appointment booked between patient and doctor",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Appointment ID" },
+        "patientId": { "type": "string", "description": "Patient user ID" },
+        "patientName": { "type": "string", "description": "Patient full name" },
+        "patientAge": { "type": "number", "description": "Patient age" },
+        "doctorId": { "type": "string", "description": "Doctor user ID" },
+        "doctorName": { "type": "string", "description": "Doctor full name" },
+        "doctorSpecialization": { "type": "string", "description": "Doctor specialization" },
+        "date": { "type": "string", "description": "Appointment date" },
+        "timeSlot": { "type": "string", "description": "Booked time window" },
+        "type": { "type": "string", "enum": ["video", "in-clinic", "audio"], "description": "Mode of consultation" },
+        "status": { "type": "string", "enum": ["confirmed", "in-progress", "completed", "cancelled"], "description": "Current status" },
+        "fee": { "type": "number", "description": "Consultation fee" },
+        "paymentStatus": { "type": "string", "enum": ["paid", "pending", "refunded"], "description": "Payment status" },
+        "reason": { "type": "string", "description": "Chief medical complaint" },
+        "clinicalNotes": { "type": "string", "description": "Doctor clinical diagnosis and notes" },
+        "prescriptionId": { "type": "string", "description": "Linked prescription ID" }
+      },
+      "required": ["id", "patientId", "doctorId", "date", "timeSlot", "status"]
+    },
+    "Prescription": {
+      "title": "Prescription",
+      "description": "Digital medical e-prescription generated by a doctor",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Prescription unique ID" },
+        "appointmentId": { "type": "string", "description": "Associated appointment ID" },
+        "patientId": { "type": "string", "description": "Recipient patient ID" },
+        "patientName": { "type": "string", "description": "Recipient patient name" },
+        "doctorId": { "type": "string", "description": "Issuing doctor ID" },
+        "doctorName": { "type": "string", "description": "Issuing doctor name" },
+        "clinicName": { "type": "string", "description": "Issuing hospital or clinic" },
+        "date": { "type": "string", "description": "Issue date" },
+        "diagnosis": { "type": "string", "description": "Clinical diagnosis" },
+        "dietaryAdvice": { "type": "string", "description": "Diet and lifestyle instructions" },
+        "digitalSignature": { "type": "string", "description": "Cryptographic digital signature" },
+        "qrCodeHash": { "type": "string", "description": "QR code verification hash" }
+      },
+      "required": ["id", "patientId", "doctorId", "date", "diagnosis"]
+    },
+    "PharmacyOrder": {
+      "title": "PharmacyOrder",
+      "description": "Medication order submitted by a patient to Medimart",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Order tracking ID" },
+        "patientId": { "type": "string", "description": "Buyer patient ID" },
+        "patientName": { "type": "string", "description": "Buyer full name" },
+        "totalAmount": { "type": "number", "description": "Total order amount" },
+        "status": { "type": "string", "enum": ["placed", "verified", "processing", "shipped", "delivered", "cancelled"], "description": "Order fulfillment status" },
+        "paymentMethod": { "type": "string", "description": "Payment instrument used" },
+        "transactionId": { "type": "string", "description": "Payment reference ID" },
+        "orderedAt": { "type": "string", "description": "Order placement timestamp" },
+        "prescriptionFile": { "type": "string", "description": "Uploaded prescription file name" }
+      },
+      "required": ["id", "patientId", "totalAmount", "status", "orderedAt"]
+    },
+    "HealthVitals": {
+      "title": "HealthVitals",
+      "description": "Patient biometric vital logs such as blood pressure, glucose, and heart rate",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Vitals reading ID" },
+        "patientId": { "type": "string", "description": "Patient owner ID" },
+        "date": { "type": "string", "description": "Date of measurement" },
+        "systolic": { "type": "number", "description": "Systolic blood pressure (mmHg)" },
+        "diastolic": { "type": "number", "description": "Diastolic blood pressure (mmHg)" },
+        "heartRate": { "type": "number", "description": "Pulse bpm" },
+        "bloodSugarFasting": { "type": "number", "description": "Fasting blood sugar (mg/dL)" },
+        "bloodSugarPostPrandial": { "type": "number", "description": "Post-prandial blood sugar (mg/dL)" },
+        "spO2": { "type": "number", "description": "Oxygen saturation percentage" },
+        "weight": { "type": "number", "description": "Weight in kg" },
+        "recordedAt": { "type": "string", "description": "Timestamp recorded" }
+      },
+      "required": ["id", "patientId", "recordedAt"]
+    },
+    "PillReminder": {
+      "title": "PillReminder",
+      "description": "Scheduled reminder for medication dosage intake",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Reminder ID" },
+        "patientId": { "type": "string", "description": "Patient ID" },
+        "medicineName": { "type": "string", "description": "Medicine name" },
+        "dosage": { "type": "string", "description": "Dose quantity" },
+        "frequency": { "type": "string", "description": "Dosage frequency" },
+        "instructions": { "type": "string", "description": "Special intake instructions" },
+        "startDate": { "type": "string", "description": "Course start date" },
+        "endDate": { "type": "string", "description": "Course end date" },
+        "active": { "type": "boolean", "description": "Whether reminder is active" }
+      },
+      "required": ["id", "patientId", "medicineName", "active"]
+    },
+    "InAppNotification": {
+      "title": "InAppNotification",
+      "description": "User notification alert regarding appointments, orders, or medications",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Notification ID" },
+        "userId": { "type": "string", "description": "Recipient user ID" },
+        "title": { "type": "string", "description": "Alert title" },
+        "message": { "type": "string", "description": "Alert description message" },
+        "time": { "type": "string", "description": "Display time" },
+        "read": { "type": "boolean", "description": "Read receipt status" },
+        "type": { "type": "string", "description": "Notification category" }
+      },
+      "required": ["id", "userId", "title", "message", "read"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/User" },
+      "description": "Registered user profile documents"
+    },
+    "/medicines/{medicineId}": {
+      "schema": { "$ref": "#/entities/Medicine" },
+      "description": "Medimart pharmacy medicines catalog and store inventory"
+    },
+    "/appointments/{appointmentId}": {
+      "schema": { "$ref": "#/entities/Appointment" },
+      "description": "Patient and doctor consultation appointments"
+    },
+    "/prescriptions/{prescriptionId}": {
+      "schema": { "$ref": "#/entities/Prescription" },
+      "description": "Digital verified medical prescriptions"
+    },
+    "/orders/{orderId}": {
+      "schema": { "$ref": "#/entities/PharmacyOrder" },
+      "description": "Pharmacy medicine orders and delivery status"
+    },
+    "/vitals/{vitalId}": {
+      "schema": { "$ref": "#/entities/HealthVitals" },
+      "description": "Patient biometric health vitals records"
+    },
+    "/pill_reminders/{reminderId}": {
+      "schema": { "$ref": "#/entities/PillReminder" },
+      "description": "Daily medication pill reminders"
+    },
+    "/notifications/{notificationId}": {
+      "schema": { "$ref": "#/entities/InAppNotification" },
+      "description": "User notification alerts"
+    }
+  }
+}
